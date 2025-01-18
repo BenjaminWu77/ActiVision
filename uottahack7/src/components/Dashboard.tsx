@@ -1,6 +1,7 @@
 import React from 'react';
 import Leaderboard from './Leaderboard';
 import WebsiteBlocker from './WebsiteBlocker';
+import ChatGPTSuggestions from './chatgpt-suggestions';
 import PreviousStats from './PreviousStats';
 import BestWorkouts from './BestWorkouts';
 import TodaysStats from './TodaysStats';
@@ -24,6 +25,9 @@ const Dashboard: React.FC = () => {
         </div>
         <div style={{ ...styles.box, ...styles.todaysStatsBox }}>
           <TodaysStats />
+        </div>
+        <div style={{ ...styles.box, ...styles.chatgptSuggestionsBox }}>
+          <ChatGPTSuggestions />
         </div>
       </div>
     </div>

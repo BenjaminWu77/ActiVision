@@ -10,3 +10,11 @@ body {
 .leaderboard, .website-blocker {
   margin: 20px 0;
 }
+
+.chatgpt-suggestions {
+  border: 1px solid #ccc;
+  padding: 20px;
+  margin: 20px 0;
+  background-color: #f5f5f5;
+  border-radius: 5px;
+}
