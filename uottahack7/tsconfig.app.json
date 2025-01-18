@@ -22,5 +22,5 @@
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
-  "include": ["src"]
+  "include": ["src", "src/components/components/BestWorkouts.tsx", "src/components/components/Dashboard.tsx", "src/components/components/Leaderboard.tsx", "src/components/components/PreviousStats.tsx", "src/components/components/TodaysStats.tsx", "src/components/components/WebsiteBlocker.tsx"]
 }

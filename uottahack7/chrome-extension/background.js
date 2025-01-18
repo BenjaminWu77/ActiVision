@@ -7,6 +7,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     const url = new URL(tab.url);
     if (['youtube.com', 'tiktok.com', 'reddit.com', 'twitter.com'].includes(url.hostname)) {
       chrome.storage.sync.get('screenTime', (data) => {
+        console.log(`Current screen time: ${data.screenTime}`);
         if (data.screenTime > 0) {
           chrome.storage.sync.set({ screenTime: data.screenTime - 1 });
           fetch('http://localhost:5001/api/screen-time', {
@@ -15,9 +16,19 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({ minutes: 1 }),
+          }).then(() => {
+            console.log('Screen time decremented');
+          }).catch((error) => {
+            console.error('Error decrementing screen time:', error);
           });
         } else {
-          chrome.tabs.update(tabId, { url: 'about:blank' });
+          console.log('Blocking access to:', url.hostname);
+          chrome.scripting.executeScript({
+            target: { tabId: tabId },
+            func: () => {
+              window.location.href = chrome.runtime.getURL('blocked.html');
+            }
+          });
         }
       });
     }
