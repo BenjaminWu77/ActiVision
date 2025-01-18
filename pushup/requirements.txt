@@ -1,0 +1,13 @@
+# Instructions to set up a virtual environment:
+# 0. directory
+#    cd into "pushup" directory
+# 1. Create a virtual environment:
+#    python -m venv myenv
+# 2. Activate the virtual environment:
+#    On Windows: .\myenv\Scripts\activate
+#    On macOS/Linux: source myenv/bin/activate
+# 3. Install the required libraries:
+#    pip install opencv-python
+#    pip install mediapipe
+# 4. run the program 
+#    python main.py
