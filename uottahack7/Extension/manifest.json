@@ -1,0 +1,10 @@
+{
+    "manifest_version": 3,
+    "name": "Hello Extensions",
+    "version": "1.0",
+    "description": "Hello Chrome Extension",
+    "action": {
+      "default_popup": "popup.html"
+      },
+      "permissions": []
+}

@@ -1,0 +1,12 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.dashboard {
+  padding: 20px;
+}
+
+.leaderboard, .website-blocker {
+  margin: 20px 0;
+}

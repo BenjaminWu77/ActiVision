@@ -1,0 +1,23 @@
+.App {
+  text-align: center;
+}
+
+.dashboard {
+  padding: 20px;
+}
+
+.bento-box {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.box {
+  border: 1px solid #ccc;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.leaderboard, .website-blocker, .previous-stats, .best-workouts {
+  margin: 20px 0;
+}
