@@ -1,36 +1,143 @@
 const express = require('express');
 const cors = require('cors');
-const bodyParser = require('body-parser');
+const dotenv = require('dotenv');
+const { MongoClient, ServerApiVersion } = require('mongodb');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const mongoose = require('mongoose');
+const path = require('path');
+const fs = require('fs');
 
+// Load environment variables
+dotenv.config();
+
+// Initialize Express app
 const app = express();
-const port = 5001;
+const PORT = process.env.PORT || 5001;
 
-let pushups = 0;
-let screenTime = 0;
+// CORS Configuration
+const corsOptions = {
+  origin: 'http://localhost:5173', // Replace with your frontend's origin
+  optionsSuccessStatus: 200,
+};
 
-app.use(cors());
-app.use(bodyParser.json());
+// Middleware
+app.use(cors(corsOptions));
+app.use(express.json());
 
-app.get('/api/pushups', (req, res) => {
-  res.json({ pushups });
+// MongoDB Client Configuration
+const uri = process.env.MONGO_URI || '';
+mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('Failed to connect to MongoDB', err));
+
+// User Schema
+const userSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  screenTime: { type: Number, default: 0 },
+  topPushupsAllTime: { type: Number, default: 0 },
+  topSitupsAllTime: { type: Number, default: 0 },
+  pushupDayStreak: { type: Number, default: 0 },
 });
 
-app.post('/api/pushups', (req, res) => {
-  pushups += 1;
-  screenTime += 1; // 1 pushup = 1 minute of screen time
-  res.json({ pushups, screenTime });
+const User = mongoose.model('User', userSchema);
+
+// Middleware for authentication
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (token == null) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET || '', (err, user) => {
+    if (err) {
+      return res.status(403).json({ error: 'Token is invalid or expired' });
+    }
+    req.userId = user.id;
+    next();
+  });
+};
+
+// Endpoint for user registration
+app.post('/api/register', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required' });
+  }
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  try {
+    const user = new User({ email, password: hashedPassword });
+    await user.save();
+    res.status(201).json({ message: 'User registered successfully', userId: user._id });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to register user' });
+  }
 });
 
-app.get('/api/screen-time', (req, res) => {
-  res.json({ screenTime });
+// Endpoint for user login
+app.post('/api/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required' });
+  }
+
+  const user = await User.findOne({ email });
+
+  if (user && await bcrypt.compare(password, user.password)) {
+    const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET || '', { expiresIn: '1h' });
+    res.json({ accessToken, user: { email: user.email } });
+  } else {
+    res.status(401).json({ error: 'Invalid credentials' });
+  }
 });
 
-app.post('/api/screen-time', (req, res) => {
-  const { minutes } = req.body;
-  screenTime -= minutes;
-  res.json({ screenTime });
+// Endpoint to update user data
+app.post('/api/user-data', authenticateToken, async (req, res) => {
+  const { screenTime, topPushupsAllTime, topSitupsAllTime, pushupDayStreak } = req.body;
+  const userId = req.userId;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    user.screenTime = screenTime !== undefined ? screenTime : user.screenTime;
+    user.topPushupsAllTime = topPushupsAllTime !== undefined ? topPushupsAllTime : user.topPushupsAllTime;
+    user.topSitupsAllTime = topSitupsAllTime !== undefined ? topSitupsAllTime : user.topSitupsAllTime;
+    user.pushupDayStreak = pushupDayStreak !== undefined ? pushupDayStreak : user.pushupDayStreak;
+
+    await user.save();
+    res.status(200).json({ message: 'User data updated successfully', user });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update user data' });
+  }
 });
 
-app.listen(port, () => {
-  console.log(`Server running on http://localhost:${port}`);
+// Endpoint to get user data
+app.get('/api/user-data', authenticateToken, async (req, res) => {
+  const userId = req.userId;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch user data' });
+  }
+});
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
