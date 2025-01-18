@@ -3,6 +3,7 @@ import Leaderboard from './Leaderboard';
 import WebsiteBlocker from './WebsiteBlocker';
 import PreviousStats from './PreviousStats';
 import BestWorkouts from './BestWorkouts';
+import TodaysStats from './TodaysStats';
 
 const Dashboard: React.FC = () => {
   return (
@@ -21,6 +22,9 @@ const Dashboard: React.FC = () => {
         <div style={{ ...styles.box, ...styles.blockerBox }}>
           <WebsiteBlocker />
         </div>
+        <div style={{ ...styles.box, ...styles.todaysStatsBox }}>
+          <TodaysStats />
+        </div>
       </div>
     </div>
   );
@@ -35,11 +39,12 @@ const styles = {
     background: '#fff',
     borderRadius: '10px',
     boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+    overflow: 'hidden',
   },
   bentoBox: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
-    gridTemplateRows: 'auto auto',
+    gridTemplateRows: 'auto auto auto',
     gap: '20px',
   },
   box: {
@@ -60,6 +65,10 @@ const styles = {
   },
   blockerBox: {
     background: '#fff3e0',
+  },
+  todaysStatsBox: {
+    gridColumn: 'span 2',
+    background: '#f0f4c3',
   },
 };
 
