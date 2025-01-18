@@ -37,7 +37,7 @@ image1 = mp.Image.create_from_file({input image here})
 result1 = detector.detect(image1)
 
 drawn_image = draw_landmarks_on_image(image1.numpy_view(), result1)
-cv2_imshow(cv2.cvColor(drawn_image, cv2.COLOR_RGB2BGR))
+cv2.imshow(cv2.cvColor(drawn_image, cv2.COLOR_RGB2BGR))
 
 #pose capture code more speficially shoulders
 baseOptions = python.BaseOptions(model_asset_path='pose_landmarker.task')
@@ -49,7 +49,7 @@ image2 = mp.Image.create_from_file({input image here})
 result2 = detector.detect(image2)
 
 landmark_image = draw_landmarks_on_image(image2.numpy_view(), result2)
-cv2_imshow(cv2.cvtColor(landmark_image, cv2.COLOR_RGB2BGR))
+cv2.imshow(cv2.cvtColor(landmark_image, cv2.COLOR_RGB2BGR))
 
 #video capture code
 vid = cv2.VideoCapture(0)
