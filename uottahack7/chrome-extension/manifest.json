@@ -1,29 +1,15 @@
 {
-  "manifest_version": 2,
-  "name": "Workout Screen Time Manager",
+  "manifest_version": 3,
+  "name": "SiteBlocker",
+  "description": "Restrict access to websites that the user selects.",
   "version": "1.0",
-  "permissions": [
-    "tabs",
-    "storage",
-    "activeTab",
-    "http://localhost:5001/"
-  ],
-  "background": {
-    "scripts": ["background.js"],
-    "persistent": false
+  "permissions": ["storage", "tabs"],
+  "action": {
+    "default_title": "Site Blocker",
+    "default_popup": "./popup/popup.html"
   },
-  "content_scripts": [
-    {
-      "matches": ["*://*.youtube.com/*", "*://*.tiktok.com/*", "*://*.reddit.com/*", "*://*.twitter.com/*"],
-      "js": ["content.js"]
-    }
-  ],
-  "browser_action": {
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
-    }
-  }
+  "content_scripts": [{
+    "matches": ["<all_urls>"],
+    "js": ["contentScript.js"]
+  }]
 }

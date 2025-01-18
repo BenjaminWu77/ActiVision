@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 const presetSites = [
   'youtube.com',
@@ -13,11 +13,31 @@ const WebsiteBlocker: React.FC = () => {
   const [blockedSites, setBlockedSites] = useState<string[]>([]);
   const [site, setSite] = useState<string>('');
 
+  useEffect(() => {
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      chrome.storage.sync.get('blockedSites', (data) => {
+        if (data.blockedSites) {
+          setBlockedSites(data.blockedSites);
+        }
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      chrome.storage.sync.set({ blockedSites });
+    }
+  }, [blockedSites]);
+
   const addSite = () => {
     if (site && !blockedSites.includes(site)) {
       setBlockedSites([...blockedSites, site]);
       setSite('');
     }
+  };
+
+  const unblockAllSites = () => {
+    setBlockedSites([]);
   };
 
   const toggleSite = (presetSite: string) => {
@@ -39,6 +59,7 @@ const WebsiteBlocker: React.FC = () => {
         style={styles.input}
       />
       <button onClick={addSite} style={styles.button}>Block</button>
+      <button onClick={unblockAllSites} style={styles.button}>Unblock All</button>
       <ul>
         {blockedSites.map((blockedSite, index) => (
           <li key={index}>{blockedSite}</li>
