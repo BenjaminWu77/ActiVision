@@ -1,12 +1,31 @@
 import React, { useState } from 'react';
 
+const presetSites = [
+  'youtube.com',
+  'tiktok.com',
+  'netflix.com',
+  'chat.openai.com',
+  'twitter.com',
+  'reddit.com'
+];
+
 const WebsiteBlocker: React.FC = () => {
   const [blockedSites, setBlockedSites] = useState<string[]>([]);
   const [site, setSite] = useState<string>('');
 
   const addSite = () => {
-    setBlockedSites([...blockedSites, site]);
-    setSite('');
+    if (site && !blockedSites.includes(site)) {
+      setBlockedSites([...blockedSites, site]);
+      setSite('');
+    }
+  };
+
+  const toggleSite = (presetSite: string) => {
+    if (blockedSites.includes(presetSite)) {
+      setBlockedSites(blockedSites.filter((s) => s !== presetSite));
+    } else {
+      setBlockedSites([...blockedSites, presetSite]);
+    }
   };
 
   return (
@@ -23,6 +42,21 @@ const WebsiteBlocker: React.FC = () => {
       <ul>
         {blockedSites.map((blockedSite, index) => (
           <li key={index}>{blockedSite}</li>
+        ))}
+      </ul>
+      <h3>Preset Sites</h3>
+      <ul>
+        {presetSites.map((presetSite) => (
+          <li key={presetSite}>
+            <label>
+              <input
+                type="checkbox"
+                checked={blockedSites.includes(presetSite)}
+                onChange={() => toggleSite(presetSite)}
+              />
+              {presetSite}
+            </label>
+          </li>
         ))}
       </ul>
     </div>

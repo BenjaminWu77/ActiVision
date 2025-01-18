@@ -1,15 +1,16 @@
 {
-  "manifest_version": 3,
+  "manifest_version": 2,
   "name": "Workout Screen Time Manager",
   "version": "1.0",
   "permissions": [
     "tabs",
     "storage",
     "activeTab",
-    "scripting"
+    "http://localhost:5001/"
   ],
   "background": {
-    "service_worker": "background.js"
+    "scripts": ["background.js"],
+    "persistent": false
   },
   "content_scripts": [
     {
@@ -17,7 +18,12 @@
       "js": ["content.js"]
     }
   ],
-  "action": {
-    "default_popup": "popup.html"
+  "browser_action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
   }
 }
