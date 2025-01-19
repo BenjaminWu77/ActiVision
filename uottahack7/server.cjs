@@ -8,6 +8,8 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const path = require('path');
 const fs = require('fs');
+const bodyParser = require('body-parser');
+const { Configuration, OpenAIApi } = require('openai');
 
 // Load environment variables
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
@@ -25,6 +27,7 @@ const corsOptions = {
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(bodyParser.json());
 
 // MongoDB Client Configuration
 const uri = process.env.MONGO_URI;
@@ -289,6 +292,31 @@ app.post('/api/decrement-screen-time', authenticateToken, async (req, res) => {
     res.status(200).json({ message: 'Screen time decremented successfully', screenTime: user.screenTime });
   } catch (error) {
     res.status(500).json({ error: 'Failed to decrement screen time' });
+  }
+});
+
+// OpenAI Configuration
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+const openai = new OpenAIApi(configuration);
+
+// Endpoint to get ChatGPT suggestions
+app.get('/api/chatgpt-suggestions', async (req, res) => {
+  try {
+    const response = await openai.createChatCompletion({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        { role: 'system', content: 'You are a helpful assistant.' },
+        { role: 'user', content: 'Recommend five at home gym equipment under $100 CAD for a fitness enthusiast.' }
+      ]
+    });
+
+    const suggestions = response.data.choices[0]?.message?.content || 'No suggestions available';
+    res.json({ suggestions });
+  } catch (error) {
+    console.error('Error fetching suggestions:', error);
+    res.status(500).json({ error: 'Failed to fetch suggestions' });
   }
 });
 
