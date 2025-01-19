@@ -1,8 +1,7 @@
-require('dotenv').config();
-const { OpenAI } = require('openai');
+
+const dotenv = require('dotenv');
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
 const { exec } = require('child_process');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -12,7 +11,6 @@ const fs = require('fs');
 const http = require('http');
 const { Server } = require('socket.io');
 const bodyParser = require('body-parser');
-const { Configuration, OpenAIApi } = require('openai');
 
 // Load environment variables
 dotenv.config({ path: path.resolve(__dirname, '.env') });
@@ -55,7 +53,7 @@ io.on('connection', (socket) => {
 });
 
 // Database connection
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect('MONGO DB HERE', { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('Failed to connect to MongoDB', err));
 
@@ -82,7 +80,7 @@ const authenticateToken = (req, res, next) => {
     return res.status(401).json({ error: 'No token provided' });
   }
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+  jwt.verify(token, '9^aY$D1@wF3kLz!7pX#6Tg2%mN8uRq&S*VJb0Z5hC+QeOjK', (err, user) => {
     if (err) {
       return res.status(403).json({ error: 'Token is invalid or expired' });
     }
@@ -93,12 +91,12 @@ const authenticateToken = (req, res, next) => {
 
 // Generate Access Token
 function generateAccessToken(user) {
-  return jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '10m' });
+  return jwt.sign({ id: user._id }, '9^aY$D1@wF3kLz!7pX#6Tg2%mN8uRq&S*VJb0Z5hC+QeOjK', { expiresIn: '10m' });
 }
 
 // Generate Refresh Token
 function generateRefreshToken(user) {
-  return jwt.sign({ id: user._id }, process.env.JWT_REFRESH_SECRET, { expiresIn: '7d' });
+  return jwt.sign({ id: user._id }, 'eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTczNzI2MDU5OSwiaWF0IjoxNzM3MjYwNTk5fQ.oZAdN5GNAvWHZXmExJkxCErUa4WszqYxr9LPFPIGg_c', { expiresIn: '7d' });
 }
 
 // Endpoint for user registration
@@ -146,7 +144,7 @@ app.post('/api/refresh-token', (req, res) => {
     return res.status(401).json({ error: 'Refresh token is required' });
   }
 
-  jwt.verify(token, process.env.JWT_REFRESH_SECRET, (err, user) => {
+  jwt.verify(token, 'eyJhbGciOiJIUzI1NiJ9.eyJSb2xlIjoiQWRtaW4iLCJJc3N1ZXIiOiJJc3N1ZXIiLCJVc2VybmFtZSI6IkphdmFJblVzZSIsImV4cCI6MTczNzI2MDU5OSwiaWF0IjoxNzM3MjYwNTk5fQ.oZAdN5GNAvWHZXmExJkxCErUa4WszqYxr9LPFPIGg_c', (err, user) => {
     if (err) {
       return res.status(403).json({ error: 'Invalid refresh token' });
     }
@@ -336,51 +334,5 @@ app.post('/api/launch-exercise', authenticateToken, async (req, res) => {
 
 // Start server with WebSocket support
 server.listen(PORT, () => {
-// Endpoint to decrement screen time
-app.post('/api/decrement-screen-time', authenticateToken, async (req, res) => {
-  const userId = req.userId;
-  const { minutes } = req.body;
-
-  try {
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    user.screenTime = Math.max(0, user.screenTime - minutes);
-    await user.save();
-    res.status(200).json({ message: 'Screen time decremented successfully', screenTime: user.screenTime });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to decrement screen time' });
-  }
-});
-
-// OpenAI Configuration
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-const openai = new OpenAIApi(configuration);
-
-// Endpoint to get ChatGPT suggestions
-app.get('/api/chatgpt-suggestions', async (req, res) => {
-  try {
-    const response = await openai.createChatCompletion({
-      model: 'gpt-3.5-turbo',
-      messages: [
-        { role: 'system', content: 'You are a helpful assistant.' },
-        { role: 'user', content: 'Recommend five at home gym equipment under $100 CAD for a fitness enthusiast.' }
-      ]
-    });
-
-    const suggestions = response.data.choices[0]?.message?.content || 'No suggestions available';
-    res.json({ suggestions });
-  } catch (error) {
-    console.error('Error fetching suggestions:', error);
-    res.status(500).json({ error: 'Failed to fetch suggestions' });
-  }
-});
-
-// Start the server
-app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
