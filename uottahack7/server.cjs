@@ -1,4 +1,3 @@
-
 const { OpenAI } = require('openai');
 const express = require('express');
 const cors = require('cors');
@@ -46,6 +45,8 @@ const userSchema = new mongoose.Schema({
   topPushupsAllTime: { type: Number, default: 0 },
   topSitupsAllTime: { type: Number, default: 0 },
   pushupDayStreak: { type: Number, default: 0 },
+  todaysPushups: { type: Number, default: 0 },
+  todaysSitups: { type: Number, default: 0 },
 });
 
 const User = mongoose.model('User', userSchema);
@@ -107,7 +108,7 @@ app.post('/api/login', async (req, res) => {
 
 // Endpoint to update user data
 app.post('/api/user-data', authenticateToken, async (req, res) => {
-  const { screenTime, topPushupsAllTime, topSitupsAllTime, pushupDayStreak } = req.body;
+  const { screenTime, topPushupsAllTime, topSitupsAllTime, pushupDayStreak, todaysPushups, todaysSitups } = req.body;
   const userId = req.userId;
 
   try {
@@ -120,6 +121,8 @@ app.post('/api/user-data', authenticateToken, async (req, res) => {
     user.topPushupsAllTime = topPushupsAllTime !== undefined ? topPushupsAllTime : user.topPushupsAllTime;
     user.topSitupsAllTime = topSitupsAllTime !== undefined ? topSitupsAllTime : user.topSitupsAllTime;
     user.pushupDayStreak = pushupDayStreak !== undefined ? pushupDayStreak : user.pushupDayStreak;
+    user.todaysPushups = todaysPushups !== undefined ? todaysPushups : user.todaysPushups;
+    user.todaysSitups = todaysSitups !== undefined ? todaysSitups : user.todaysSitups;
 
     await user.save();
     res.status(200).json({ message: 'User data updated successfully', user });
@@ -144,9 +147,32 @@ app.get('/api/user-data', authenticateToken, async (req, res) => {
   }
 });
 
+// Endpoint to get today's stats
+app.get('/api/todays-stats', authenticateToken, async (req, res) => {
+  const userId = req.userId;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    const todaysStats = {
+      pushups: user.todaysPushups,
+      situps: user.todaysSitups,
+      screenTime: user.screenTime,
+    };
+
+    res.status(200).json(todaysStats);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch todays stats' });
+  }
+});
+
 // Endpoint to launch exercise session
-app.post('/api/launch-exercise', (req, res) => {
+app.post('/api/launch-exercise', authenticateToken, (req, res) => {
   const { exerciseType, duration } = req.body;
+  const userId = req.userId;
 
   const command = `/Users/marcvidal/Documents/Code/Uottahack/ActivAI/pushup/myenv/bin/python /Users/marcvidal/Documents/Code/Uottahack/ActivAI/pushup/main.py ${exerciseType} ${duration}`;
 
@@ -159,8 +185,40 @@ app.post('/api/launch-exercise', (req, res) => {
       console.error(`Stderr: ${stderr}`);
       return res.status(500).json({ error: 'Failed to start exercise session' });
     }
+
     console.log(`Stdout: ${stdout}`);
-    res.status(200).json({ message: 'Exercise session started successfully' });
+    try {
+      const results = JSON.parse(stdout);
+      console.log(`Results: ${JSON.stringify(results)}`);
+
+      User.findById(userId, async (err, user) => {
+        if (err || !user) {
+          return res.status(404).json({ error: 'User not found' });
+        }
+
+        console.log(`Exercise Type: ${results.exercise_type}`);
+        console.log(`Count: ${results.count}`);
+
+        if (results.exercise_type === 'Push-ups') {
+          if (results.count > user.topPushupsAllTime) {
+            user.topPushupsAllTime = results.count;
+          }
+          user.pushupDayStreak += 1;
+          user.todaysPushups += results.count;
+        } else if (results.exercise_type === 'Sit-ups') {
+          if (results.count > user.topSitupsAllTime) {
+            user.topSitupsAllTime = results.count;
+          }
+          user.todaysSitups += results.count;
+        }
+
+        await user.save();
+        res.status(200).json({ message: 'Exercise session completed successfully', results, user });
+      });
+    } catch (parseError) {
+      console.error(`Failed to parse JSON: ${parseError.message}`);
+      return res.status(500).json({ error: 'Failed to parse exercise session results' });
+    }
   });
 });
 
