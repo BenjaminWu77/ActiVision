@@ -9,11 +9,16 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const path = require('path');
 const fs = require('fs');
+<<<<<<< HEAD
 const http = require('http');
 const { Server } = require('socket.io');
+=======
+const bodyParser = require('body-parser');
+const { Configuration, OpenAIApi } = require('openai');
+>>>>>>> c0eecf2f82dfeef3f98ebd89288c62d1b667625d
 
 // Load environment variables
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 // Initialize Express app
 const app = express();
@@ -36,6 +41,7 @@ const corsOptions = {
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(bodyParser.json());
 
 // WebSocket connection handling
 io.on('connection', (socket) => {
@@ -331,7 +337,56 @@ app.post('/api/launch-exercise', authenticateToken, async (req, res) => {
   });
 });
 
+<<<<<<< HEAD
 // Start server with WebSocket support
 server.listen(PORT, () => {
+=======
+// Endpoint to decrement screen time
+app.post('/api/decrement-screen-time', authenticateToken, async (req, res) => {
+  const userId = req.userId;
+  const { minutes } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    user.screenTime = Math.max(0, user.screenTime - minutes);
+    await user.save();
+    res.status(200).json({ message: 'Screen time decremented successfully', screenTime: user.screenTime });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to decrement screen time' });
+  }
+});
+
+// OpenAI Configuration
+const configuration = new Configuration({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+const openai = new OpenAIApi(configuration);
+
+// Endpoint to get ChatGPT suggestions
+app.get('/api/chatgpt-suggestions', async (req, res) => {
+  try {
+    const response = await openai.createChatCompletion({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        { role: 'system', content: 'You are a helpful assistant.' },
+        { role: 'user', content: 'Recommend five at home gym equipment under $100 CAD for a fitness enthusiast.' }
+      ]
+    });
+
+    const suggestions = response.data.choices[0]?.message?.content || 'No suggestions available';
+    res.json({ suggestions });
+  } catch (error) {
+    console.error('Error fetching suggestions:', error);
+    res.status(500).json({ error: 'Failed to fetch suggestions' });
+  }
+});
+
+// Start the server
+app.listen(PORT, () => {
+>>>>>>> c0eecf2f82dfeef3f98ebd89288c62d1b667625d
   console.log(`Server running on port ${PORT}`);
 });

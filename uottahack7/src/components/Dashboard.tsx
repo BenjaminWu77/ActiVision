@@ -76,6 +76,10 @@ const styles = {
     gridColumn: 'span 2',
     background: '#e0f7fa',
   },
+  chatgptSuggestionsBox:{
+    gridColumn: 'span 2',
+    background: '#f3e5f5',
+  }
 };
 
 export default Dashboard;
