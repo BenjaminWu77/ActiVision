@@ -237,6 +237,7 @@ app.post('/api/launch-exercise', authenticateToken, async (req, res) => {
             user.topPushupsAllTime = results.count;
           }
           user.todaysPushups += results.count;
+          user.screenTime += results.count * 2; // 2 minutes of screen time per push-up
 
           // Check if the user is on a streak
           if (user.pushupDayStreak < 4) {
@@ -249,6 +250,7 @@ app.post('/api/launch-exercise', authenticateToken, async (req, res) => {
             user.topSitupsAllTime = results.count;
           }
           user.todaysSitups += results.count;
+          user.screenTime += results.count; // 1 minute of screen time per sit-up
 
           // Check if the user is on a streak
           if (user.pushupDayStreak < 4) {
@@ -269,6 +271,25 @@ app.post('/api/launch-exercise', authenticateToken, async (req, res) => {
       return res.status(500).json({ error: 'Failed to parse exercise session results' });
     }
   });
+});
+
+// Endpoint to decrement screen time
+app.post('/api/decrement-screen-time', authenticateToken, async (req, res) => {
+  const userId = req.userId;
+  const { minutes } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    user.screenTime = Math.max(0, user.screenTime - minutes);
+    await user.save();
+    res.status(200).json({ message: 'Screen time decremented successfully', screenTime: user.screenTime });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to decrement screen time' });
+  }
 });
 
 // Start the server

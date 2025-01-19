@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const presetSites = [
   'youtube.com',
@@ -12,6 +13,7 @@ const presetSites = [
 const WebsiteBlocker: React.FC = () => {
   const [blockedSites, setBlockedSites] = useState<string[]>([]);
   const [site, setSite] = useState<string>('');
+  const [screenTime, setScreenTime] = useState<number>(0);
 
   useEffect(() => {
     if (typeof chrome !== 'undefined' && chrome.storage) {
@@ -20,14 +22,20 @@ const WebsiteBlocker: React.FC = () => {
           setBlockedSites(data.blockedSites);
         }
       });
+      chrome.storage.sync.get('screenTime', (data) => {
+        if (data.screenTime) {
+          setScreenTime(data.screenTime);
+        }
+      });
     }
   }, []);
 
   useEffect(() => {
     if (typeof chrome !== 'undefined' && chrome.storage) {
       chrome.storage.sync.set({ blockedSites });
+      chrome.storage.sync.set({ screenTime });
     }
-  }, [blockedSites]);
+  }, [blockedSites, screenTime]);
 
   const addSite = () => {
     if (site && !blockedSites.includes(site)) {
@@ -45,6 +53,20 @@ const WebsiteBlocker: React.FC = () => {
       setBlockedSites(blockedSites.filter((s) => s !== presetSite));
     } else {
       setBlockedSites([...blockedSites, presetSite]);
+    }
+  };
+
+  const decrementScreenTime = async (minutes: number) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post('http://localhost:5001/api/decrement-screen-time', { minutes }, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      setScreenTime(response.data.screenTime);
+    } catch (error) {
+      console.error('Failed to decrement screen time', error);
     }
   };
 
@@ -80,6 +102,11 @@ const WebsiteBlocker: React.FC = () => {
           </li>
         ))}
       </ul>
+      <div>
+        <h3>Screen Time: {screenTime} minutes</h3>
+        <button onClick={() => decrementScreenTime(1)} style={styles.button}>Use 1 minute</button>
+        <button onClick={() => decrementScreenTime(5)} style={styles.button}>Use 5 minutes</button>
+      </div>
     </div>
   );
 };

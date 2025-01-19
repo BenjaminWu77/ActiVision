@@ -39,9 +39,12 @@ function createBlockedPage() {
 
 // Check if the website should be blocked and take appropriate action
 function check_if_restricted() {
-  if (shouldBlockWebsite()) {
-    createBlockedPage();
-  }
+  chrome.storage.sync.get("screenTime", function (data) {
+    const screenTime = data.screenTime || 0;
+    if (screenTime <= 0 && shouldBlockWebsite()) {
+      createBlockedPage();
+    }
+  });
 }
 
 function generateSTYLING() {
