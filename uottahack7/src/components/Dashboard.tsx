@@ -5,6 +5,7 @@ import ChatGPTSuggestions from './chatgpt-suggestions';
 import PreviousStats from './PreviousStats';
 import BestWorkouts from './BestWorkouts';
 import TodaysStats from './TodaysStats';
+import ExerciseLauncher from './ExerciseLauncher';
 
 const Dashboard: React.FC = () => {
   return (
@@ -29,6 +30,9 @@ const Dashboard: React.FC = () => {
         <div style={{ ...styles.box, ...styles.chatgptSuggestionsBox }}>
           <ChatGPTSuggestions />
         </div>
+        <div style={{ ...styles.box, ...styles.exerciseLauncherBox }}>
+          <ExerciseLauncher />
+        </div>
       </div>
     </div>
   );
@@ -48,7 +52,7 @@ const styles = {
   bentoBox: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
-    gridTemplateRows: 'auto auto auto',
+    gridTemplateRows: 'auto auto auto auto',
     gap: '20px',
   },
   box: {
@@ -73,6 +77,10 @@ const styles = {
   todaysStatsBox: {
     gridColumn: 'span 2',
     background: '#f0f4c3',
+  },
+  exerciseLauncherBox: {
+    gridColumn: 'span 2',
+    background: '#e0f7fa',
   },
 };
 

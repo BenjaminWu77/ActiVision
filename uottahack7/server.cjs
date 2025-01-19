@@ -4,7 +4,7 @@ import express from 'express';
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { exec } = require('child_process');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
@@ -33,7 +33,12 @@ const openai = new OpenAI({
 });
 
 // MongoDB Client Configuration
-const uri = process.env.MONGO_URI || '';
+const uri = process.env.MONGO_URI;
+if (!uri) {
+  console.error('MONGO_URI is not defined in the environment variables');
+  process.exit(1);
+}
+
 mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => console.error('Failed to connect to MongoDB', err));
@@ -181,6 +186,26 @@ app.get('/api/user-data', authenticateToken, async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: 'Failed to fetch user data' });
   }
+});
+
+// Endpoint to launch exercise session
+app.post('/api/launch-exercise', (req, res) => {
+  const { exerciseType, duration } = req.body;
+
+  const command = `/Users/marcvidal/Documents/Code/Uottahack/ActivAI/pushup/myenv/bin/python /Users/marcvidal/Documents/Code/Uottahack/ActivAI/pushup/main.py ${exerciseType} ${duration}`;
+
+  exec(command, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Error: ${error.message}`);
+      return res.status(500).json({ error: 'Failed to start exercise session' });
+    }
+    if (stderr) {
+      console.error(`Stderr: ${stderr}`);
+      return res.status(500).json({ error: 'Failed to start exercise session' });
+    }
+    console.log(`Stdout: ${stdout}`);
+    res.status(200).json({ message: 'Exercise session started successfully' });
+  });
 });
 
 // Start the server
