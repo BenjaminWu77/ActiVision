@@ -18,10 +18,12 @@ const ExerciseLauncher: React.FC = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ exerciseType, duration }),
+        body: JSON.stringify({ exerciseType, duration, token }),
       });
 
       if (response.ok) {
+        const data = await response.json();
+        console.log(`Exercise session started! Results: ${JSON.stringify(data.results)}`);
         alert('Exercise session started!');
       } else {
         const errorData = await response.json();
