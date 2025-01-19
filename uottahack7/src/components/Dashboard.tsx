@@ -1,6 +1,5 @@
 import React from 'react';
 import Leaderboard from './Leaderboard';
-import WebsiteBlocker from './WebsiteBlocker';
 import ChatGPTSuggestions from './chatgpt-suggestions';
 import PreviousStats from './PreviousStats';
 import BestWorkouts from './BestWorkouts';
@@ -12,8 +11,14 @@ const Dashboard: React.FC = () => {
     <div style={styles.dashboard}>
       <h1>Workout Dashboard</h1>
       <div style={styles.bentoBox}>
+        <div style={{ ...styles.box, ...styles.todaysStatsBox }}>
+          <TodaysStats />
+        </div>
         <div style={{ ...styles.box, ...styles.leaderboardBox }}>
           <Leaderboard />
+        </div>
+        <div style={{ ...styles.box, ...styles.exerciseLauncherBox }}>
+          <ExerciseLauncher />
         </div>
         <div style={{ ...styles.box, ...styles.statsBox }}>
           <PreviousStats />
@@ -21,17 +26,8 @@ const Dashboard: React.FC = () => {
         <div style={{ ...styles.box, ...styles.workoutsBox }}>
           <BestWorkouts />
         </div>
-        <div style={{ ...styles.box, ...styles.blockerBox }}>
-          <WebsiteBlocker />
-        </div>
-        <div style={{ ...styles.box, ...styles.todaysStatsBox }}>
-          <TodaysStats />
-        </div>
         <div style={{ ...styles.box, ...styles.chatgptSuggestionsBox }}>
           <ChatGPTSuggestions />
-        </div>
-        <div style={{ ...styles.box, ...styles.exerciseLauncherBox }}>
-          <ExerciseLauncher />
         </div>
       </div>
     </div>
@@ -62,7 +58,6 @@ const styles = {
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
   },
   leaderboardBox: {
-    gridColumn: 'span 2',
     background: '#e3f2fd',
   },
   statsBox: {
@@ -75,7 +70,6 @@ const styles = {
     background: '#fff3e0',
   },
   todaysStatsBox: {
-    gridColumn: 'span 2',
     background: '#f0f4c3',
   },
   exerciseLauncherBox: {

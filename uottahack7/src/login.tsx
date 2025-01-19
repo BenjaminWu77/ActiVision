@@ -61,6 +61,7 @@ const Login: React.FC = () => {
   
             // Use AuthContext's login function to store the token
             login(accessToken); 
+            localStorage.setItem('accessToken', accessToken); // Store token in local storage
             setMessage('Login successful');
             setError('');
             setTimeout(() => {
