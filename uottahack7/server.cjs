@@ -9,13 +9,10 @@ const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const path = require('path');
 const fs = require('fs');
-<<<<<<< HEAD
 const http = require('http');
 const { Server } = require('socket.io');
-=======
 const bodyParser = require('body-parser');
 const { Configuration, OpenAIApi } = require('openai');
->>>>>>> c0eecf2f82dfeef3f98ebd89288c62d1b667625d
 
 // Load environment variables
 dotenv.config({ path: path.resolve(__dirname, '.env') });
@@ -337,10 +334,8 @@ app.post('/api/launch-exercise', authenticateToken, async (req, res) => {
   });
 });
 
-<<<<<<< HEAD
 // Start server with WebSocket support
 server.listen(PORT, () => {
-=======
 // Endpoint to decrement screen time
 app.post('/api/decrement-screen-time', authenticateToken, async (req, res) => {
   const userId = req.userId;
@@ -387,6 +382,5 @@ app.get('/api/chatgpt-suggestions', async (req, res) => {
 
 // Start the server
 app.listen(PORT, () => {
->>>>>>> c0eecf2f82dfeef3f98ebd89288c62d1b667625d
   console.log(`Server running on port ${PORT}`);
 });
