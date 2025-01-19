@@ -1,6 +1,5 @@
-import { OpenAI } from 'openai';
-import express from 'express';
 
+const { OpenAI } = require('openai');
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
@@ -12,7 +11,7 @@ const path = require('path');
 const fs = require('fs');
 
 // Load environment variables
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 // Initialize Express app
 const app = express();
@@ -27,10 +26,6 @@ const corsOptions = {
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || '',
-});
 
 // MongoDB Client Configuration
 const uri = process.env.MONGO_URI;
@@ -54,15 +49,6 @@ const userSchema = new mongoose.Schema({
 });
 
 const User = mongoose.model('User', userSchema);
-if (user.topPushupsAllTime + user.topSitupsAllTime < 50){
-  level = "beginner";
-}else if (user.topPushupsAllTime + user.topSitupsAllTime < 200){
-  level = "intermediate";
-}else if (user.topPushupsAllTime + user.topSitupsAllTime < 500){
-  level = "advanced";
-}else{
-  level = "expert";
-}
 
 // Middleware for authentication
 const authenticateToken = (req, res, next) => {
@@ -124,19 +110,6 @@ app.post('/api/user-data', authenticateToken, async (req, res) => {
   const { screenTime, topPushupsAllTime, topSitupsAllTime, pushupDayStreak } = req.body;
   const userId = req.userId;
 
-  const prompt = `Recommend five at home gym equipment under $100 CAD for a ${level} fitness enthusiast.`;
-
-  try{
-    const analysis = await callOpenAI(prompt);
-    res.json({ analysis });
-  }catch (error) {
-    if (error instanceof Error) {
-      res.status(500).json({ error: error.message });
-    } else {
-      res.status(500).json({ error: 'An unknown error occurred' });
-    }
-  }
-
   try {
     const user = await User.findById(userId);
     if (!user) {
@@ -153,23 +126,6 @@ app.post('/api/user-data', authenticateToken, async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: 'Failed to update user data' });
   }
-
-  async function callOpenAI(prompt) {
-  try {
-    const response = await openai.createChatCompletion({
-      model: 'ft:gpt-3.5-turbo-0125:personal::A7oftNTz',
-      messages: [
-        { role: 'system', content: 'You are a helpful assistant.' },
-        { role: 'user', content: prompt }
-      ]
-    });
-
-    return response.data.choices[0]?.message?.content || 'No response';
-  } catch (error) {
-    console.error('Error communicating with OpenAI:', error);
-    throw new Error('Failed to communicate with OpenAI');
-  }
-}
 });
 
 // Endpoint to get user data

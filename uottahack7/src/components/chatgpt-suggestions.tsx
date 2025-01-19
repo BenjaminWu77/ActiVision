@@ -1,5 +1,4 @@
 import React from 'react';
-import './index.css';
 
 const ChatGPTSuggestions: React.FC = () => {
   return (
